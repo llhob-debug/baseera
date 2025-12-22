@@ -1,31 +1,62 @@
-// app/page.tsx
-
+import Image from "next/image";
 import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <main className="min-h-screen flex items-center justify-center bg-white px-6">
-      <div className="max-w-2xl text-center">
-        {/* العنوان الرئيسي */}
-        <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-          افهم أداء نشاطك التجاري بوضوح
-        </h1>
+    <main className="relative min-h-screen">
+      {/* HERO SECTION */}
+      <section className="relative h-screen w-full overflow-hidden">
 
-        {/* الوصف */}
-        <p className="mt-6 text-lg text-gray-600 leading-relaxed">
-          بصيرة تساعدك على قراءة أرقامك التجارية وفهم وضعك المالي
-          بلغة بسيطة، بدون تعقيد، وبدون مصطلحات محاسبية.
-        </p>
+        {/* Background Image */}
+        <Image
+          src="/brand/hero.png"
+          alt="تحليل الأداء التجاري"
+          fill
+          priority
+          className="object-cover"
+          sizes="100vw"
+        />
 
-        {/* زر بدء التحليل */}
-        <div className="mt-10">
-          <Link href="/analyze">
-            <button className="px-8 py-4 bg-black text-white rounded-xl text-lg font-medium hover:bg-gray-800 transition">
-              ابدأ التحليل الآن
-            </button>
-          </Link>
+        {/* Overlay */}
+        <div className="absolute inset-0 bg-black/60" />
+
+        {/* Logo – Top Right */}
+        <div className="absolute top-6 right-6 z-20">
+          <Image
+            src="/brand/logo.png"
+            alt="Basira Logo"
+            width={180}
+            height={180}
+            priority
+            className="drop-shadow-lg"
+          />
         </div>
-      </div>
+
+        {/* Content */}
+        <div className="relative z-10 flex h-full items-center justify-center px-6 text-center text-white">
+          <div className="max-w-3xl">
+
+            <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
+              افهم أداء نشاطك التجاري بوضوح
+            </h1>
+
+            <p className="mt-6 text-base md:text-lg text-gray-200">
+              بصيرة تساعدك على قراءة أرقامك التجارية وفهم وضعك المالي الحالي
+              بلغة بسيطة، بدون تعقيد وبدون مصطلحات محاسبية.
+            </p>
+
+            {/* CTA Button → /data */}
+            <Link
+              href="/data"
+              className="mt-8 inline-block rounded-xl bg-white px-8 py-4 text-black text-lg font-semibold hover:bg-gray-200 transition"
+            >
+              ابدأ التحليل الآن
+            </Link>
+
+          </div>
+        </div>
+
+      </section>
     </main>
   );
 }

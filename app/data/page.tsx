@@ -1,205 +1,167 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-
-type Product = {
-  name: string;
-  value: number;
-};
+import { useState } from "react";
+import Link from "next/link";
 
 export default function DataPage() {
-  const [revenue, setRevenue] = useState('');
-  const [costs, setCosts] = useState('');
-  const [products, setProducts] = useState<Product[]>([]);
-  const [productName, setProductName] = useState('');
-  const [productValue, setProductValue] = useState('');
-  const [result, setResult] = useState<any>(null);
+  const [revenue, setRevenue] = useState<number>(0);
+  const [costs, setCosts] = useState<number>(0);
 
-  const addProduct = () => {
-    if (!productName || !productValue) return;
-    setProducts([...products, { name: productName, value: Number(productValue) }]);
-    setProductName('');
-    setProductValue('');
-  };
+  const profit = revenue - costs;
+  const margin =
+    revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
 
-  const analyze = () => {
-    const r = Number(revenue);
-    const c = Number(costs);
-    const profit = r - c;
-    const margin = r > 0 ? Math.round((profit / r) * 100) : 0;
+  /* ===== المؤشرات ===== */
+  const profitability =
+    profit > 0 ? "good" : profit === 0 ? "medium" : "weak";
 
-    const sorted = [...products].sort((a, b) => b.value - a.value);
-    const top = sorted[0];
-    const low = sorted[sorted.length - 1];
+  const stability =
+    revenue > 0 && costs > 0 ? "stable" : "unstable";
 
-    const profitability =
-      profit > 0 ? 'جيدة' : profit === 0 ? 'متوسطة' : 'ضعيفة';
+  /* ===== التفسير الذكي ===== */
+  let interpretation = "لم يتم إدخال بيانات كافية بعد.";
 
-    const stability =
-      margin >= 30 ? 'مستقر' : margin >= 15 ? 'متذبذب' : 'غير مستقر';
-
-    const explanation =
-      profit > 0
-        ? 'البيانات تشير إلى أداء إيجابي نسبيًا، حيث تتجاوز الإيرادات التكاليف مع وجود توازن مقبول بين عناصر النشاط.'
-        : 'يُلاحظ أن التكاليف تقترب من الإيرادات أو تتجاوزها، وهو نمط قد يظهر في فترات ضغط تشغيلي أو إعادة ترتيب داخل النشاط.';
-
-    setResult({
-      r,
-      c,
-      profit,
-      margin,
-      top,
-      low,
-      profitability,
-      stability,
-      explanation,
-    });
-  };
+  if (revenue > 0) {
+    if (profit > 0) {
+      interpretation =
+        "البيانات تشير إلى أن الأداء العام إيجابي، حيث تتجاوز الإيرادات التكاليف. يُلاحظ أن مستوى الربحية الحالي يعكس توازنًا مقبولًا في النشاط، وقد يكون من المفيد متابعة هذا النمط عبر الفترات القادمة لفهم الاستقرار بشكل أوضح.";
+    } else if (profit === 0) {
+      interpretation =
+        "البيانات تشير إلى تعادل بين الإيرادات والتكاليف. يُلاحظ أن النشاط يعمل عند نقطة توازن، وهو وضع قد يكون طبيعيًا في بعض المراحل التشغيلية.";
+    } else {
+      interpretation =
+        "البيانات تشير إلى أن التكاليف تتجاوز الإيرادات خلال هذه الفترة. يُلاحظ أن هذا النمط قد يؤثر على الاستدامة إذا استمر، وقد يكون من المفيد مراقبته مع مرور الوقت.";
+    }
+  }
 
   return (
-    <div className="max-w-7xl mx-auto px-6 py-10 space-y-12">
+    <main className="min-h-screen bg-gray-50 px-6 py-16 text-gray-900">
+      <div className="mx-auto max-w-3xl space-y-12">
 
-      {/* الإدخال */}
-      <div className="space-y-6">
-        <h1 className="text-2xl font-bold">التحليل</h1>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <Field label="الإيرادات">
-            <input
-              type="number"
-              value={revenue}
-              onChange={(e) => setRevenue(e.target.value)}
-              className="border rounded-xl px-4 py-3 w-full"
-            />
-          </Field>
-
-          <Field label="التكاليف">
-            <input
-              type="number"
-              value={costs}
-              onChange={(e) => setCosts(e.target.value)}
-              className="border rounded-xl px-4 py-3 w-full"
-            />
-          </Field>
-        </div>
-
-        <div className="border rounded-2xl p-4 space-y-4">
-          <h2 className="font-semibold">المنتجات</h2>
-
-          <div className="grid md:grid-cols-3 gap-3 items-end">
-            <Field label="اسم المنتج" span={2}>
-              <input
-                value={productName}
-                onChange={(e) => setProductName(e.target.value)}
-                className="border rounded-xl px-4 py-2 w-full"
-              />
-            </Field>
-
-            <Field label="قيمة المنتج">
-              <input
-                type="number"
-                value={productValue}
-                onChange={(e) => setProductValue(e.target.value)}
-                className="border rounded-xl px-4 py-2 w-full"
-              />
-            </Field>
-          </div>
-
-          <button
-            onClick={addProduct}
-            className="bg-gray-200 px-4 py-2 rounded-xl text-sm"
-          >
-            إضافة منتج
-          </button>
-
-          {products.length > 0 && (
-            <ul className="text-sm text-gray-600 space-y-1">
-              {products.map((p, i) => (
-                <li key={i}>
-                  {p.name} — {p.value}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        <button
-          onClick={analyze}
-          className="bg-black text-white px-8 py-4 rounded-2xl text-lg"
-        >
-          تحليل
-        </button>
-      </div>
-
-      {result && (
-        <>
-          {/* النتائج الرقمية */}
-          <div className="grid md:grid-cols-3 gap-4">
-            <Card title="الإيرادات" value={`${result.r} ريال`} />
-            <Card title="التكاليف" value={`${result.c} ريال`} />
-            <Card title="صافي الربح" value={`${result.profit} ريال`} />
-            <Card title="هامش الربح" value={`${result.margin}%`} />
-            <Card title="أعلى منتج" value={result.top?.name || '-'} />
-            <Card title="أقل منتج" value={result.low?.name || '-'} />
-          </div>
-
-          {/* التفسير */}
-          <div className="border rounded-2xl p-6">
-            <h2 className="font-semibold mb-2">🧠 التفسير الذكي</h2>
-            <p className="text-gray-700 leading-relaxed">
-              {result.explanation}
+        {/* الرأس */}
+        <header className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">تحليل الأداء</h1>
+            <p className="text-gray-600">
+              أدخل أرقامك الأساسية وشاهد القراءة العامة للأداء
             </p>
           </div>
 
-          {/* المؤشرات (ألوان أوضح) */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <Indicator title="الربحية" value={result.profitability} />
-            <Indicator title="الاستقرار" value={result.stability} />
+          <Link
+            href="/"
+            className="rounded-lg border border-gray-300 px-4 py-2 text-sm hover:bg-gray-100 transition"
+          >
+            ← العودة للرئيسية
+          </Link>
+        </header>
+
+        {/* إدخال البيانات */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm space-y-6">
+          <h2 className="text-xl font-semibold">البيانات الأساسية</h2>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block mb-1 font-medium">الإيرادات</label>
+              <input
+                type="number"
+                value={revenue}
+                onChange={(e) => setRevenue(Number(e.target.value))}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-black"
+              />
+            </div>
+
+            <div>
+              <label className="block mb-1 font-medium">التكاليف</label>
+              <input
+                type="number"
+                value={costs}
+                onChange={(e) => setCosts(Number(e.target.value))}
+                className="w-full rounded-lg border border-gray-300 px-4 py-2 focus:ring-2 focus:ring-black"
+              />
+            </div>
           </div>
-        </>
-      )}
-    </div>
-  );
-}
+        </section>
 
-function Field({
-  label,
-  children,
-  span = 1,
-}: {
-  label: string;
-  children: React.ReactNode;
-  span?: number;
-}) {
-  return (
-    <div className={`space-y-2 ${span === 2 ? 'md:col-span-2' : ''}`}>
-      <label className="text-sm font-medium text-gray-800">{label}</label>
-      {children}
-    </div>
-  );
-}
+        {/* ملخص الأرقام */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">ملخص الأرقام</h2>
 
-function Card({ title, value }: { title: string; value: string }) {
-  return (
-    <div className="border rounded-2xl p-4">
-      <div className="text-sm text-gray-500">{title}</div>
-      <div className="text-xl font-bold">{value}</div>
-    </div>
-  );
-}
+          <div className="grid grid-cols-2 gap-4 text-center">
+            <div className="rounded-lg bg-gray-100 p-4">
+              <p className="text-sm text-gray-600">صافي النتيجة</p>
+              <p className="text-2xl font-bold">{profit}</p>
+            </div>
 
-function Indicator({ title, value }: { title: string; value: string }) {
-  const style =
-    value === 'جيدة' || value === 'مستقر'
-      ? 'bg-green-100 border-green-400 text-green-800'
-      : value === 'متوسطة' || value === 'متذبذب'
-      ? 'bg-yellow-100 border-yellow-400 text-yellow-800'
-      : 'bg-red-100 border-red-400 text-red-800';
+            <div className="rounded-lg bg-gray-100 p-4">
+              <p className="text-sm text-gray-600">الهامش التقريبي</p>
+              <p className="text-2xl font-bold">{margin}%</p>
+            </div>
+          </div>
+        </section>
 
-  return (
-    <div className={`border-2 rounded-2xl p-6 ${style}`}>
-      <div className="text-sm font-medium opacity-90">{title}</div>
-      <div className="text-2xl font-bold mt-2">{value}</div>
-    </div>
+        {/* أعلى / أقل */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">أعلى / أقل بند</h2>
+
+          <div className="space-y-3">
+            <div className="flex justify-between rounded-lg bg-green-50 px-4 py-3">
+              <span>أعلى قيمة</span>
+              <span className="font-medium">الإيرادات</span>
+            </div>
+
+            <div className="flex justify-between rounded-lg bg-red-50 px-4 py-3">
+              <span>أقل قيمة</span>
+              <span className="font-medium">التكاليف</span>
+            </div>
+          </div>
+        </section>
+
+        {/* التفسير */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">التفسير</h2>
+          <p className="text-gray-700 leading-relaxed">
+            {interpretation}
+          </p>
+        </section>
+
+        {/* المؤشرات */}
+        <section className="rounded-2xl bg-white p-6 shadow-sm">
+          <h2 className="text-xl font-semibold mb-4">المؤشرات</h2>
+
+          <div className="space-y-3">
+            <div
+              className={`flex justify-between rounded-lg px-4 py-3 ${
+                profitability === "good"
+                  ? "bg-green-100"
+                  : profitability === "medium"
+                  ? "bg-yellow-100"
+                  : "bg-red-100"
+              }`}
+            >
+              <span>مؤشر الربحية</span>
+              <span className="font-medium">
+                {profitability === "good"
+                  ? "🟢 جيدة"
+                  : profitability === "medium"
+                  ? "🟡 متوسطة"
+                  : "🔴 ضعيفة"}
+              </span>
+            </div>
+
+            <div
+              className={`flex justify-between rounded-lg px-4 py-3 ${
+                stability === "stable" ? "bg-green-100" : "bg-yellow-100"
+              }`}
+            >
+              <span>مؤشر الاستقرار</span>
+              <span className="font-medium">
+                {stability === "stable" ? "🟢 مستقر" : "🟡 متذبذب"}
+              </span>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
   );
 }
