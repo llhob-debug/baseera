@@ -20,6 +20,13 @@ export default function HomePage() {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/60" />
 
+        {/* نسخة تجريبية – أعلى يسار */}
+        <div className="absolute top-6 left-6 z-20">
+          <span className="inline-flex items-center rounded-full bg-green-600/90 px-4 py-1 text-sm font-semibold text-white shadow-lg">
+            نسخة تجريبية
+          </span>
+        </div>
+
         {/* Logo – Top Right */}
         <div className="absolute top-6 right-6 z-20">
           <Image
