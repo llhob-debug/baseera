@@ -28,10 +28,16 @@ type Product = {
 
 type PeriodData = {
   id: number;
-  period: string; // مثال: يناير 2025
+  period: string; // مثال: يناير
   revenue: number;
   costs: number;
 };
+
+/* ================= HELPERS (Stage 1 UX) ================= */
+const nf = new Intl.NumberFormat("en-US");
+const fmt = (n: number) => nf.format(Number.isFinite(n) ? n : 0);
+
+const STORAGE_KEY = "basira.data.v1";
 
 /* ================= COMPONENT ================= */
 export default function DataPage() {
@@ -39,22 +45,12 @@ export default function DataPage() {
   const [mounted, setMounted] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
 
-  useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved) setDarkMode(saved === "dark");
-    setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    if (mounted) localStorage.setItem("theme", darkMode ? "dark" : "light");
-  }, [darkMode, mounted]);
-
-  /* ===== PDF Mode (لمنع قص الشعار + تحسين الالتقاط) ===== */
+  /* ===== PDF Mode (لتحسين الالتقاط) ===== */
   const [pdfMode, setPdfMode] = useState(false);
 
   /* ===== Core Inputs ===== */
-  const [revenue, setRevenue] = useState<number>(0);
-  const [costs, setCosts] = useState<number>(0);
+  const [revenue, setRevenue] = useState(0);
+  const [costs, setCosts] = useState(0);
 
   /* ===== Products (مرتبط بالإيرادات) ===== */
   const [products, setProducts] = useState<Product[]>([
@@ -62,6 +58,91 @@ export default function DataPage() {
   ]);
   const [nextProductId, setNextProductId] = useState(2);
 
+  /* ===== Periods (LineChart زمني حقيقي) ===== */
+  const [periods, setPeriods] = useState<PeriodData[]>([
+    { id: 1, period: "يناير", revenue: 0, costs: 0 },
+    { id: 2, period: "فبراير", revenue: 0, costs: 0 },
+    { id: 3, period: "مارس", revenue: 0, costs: 0 },
+    { id: 4, period: "أبريل", revenue: 0, costs: 0 },
+  ]);
+  const [nextPeriodId, setNextPeriodId] = useState(5);
+
+  /* ================= LOAD FROM STORAGE (Stage 1 UX) ================= */
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        setDarkMode(parsed.darkMode ?? true);
+        setRevenue(parsed.revenue ?? 0);
+        setCosts(parsed.costs ?? 0);
+        setProducts(
+          Array.isArray(parsed.products) && parsed.products.length
+            ? parsed.products
+            : [{ id: 1, name: "منتج 1", share: 100 }]
+        );
+        setNextProductId(parsed.nextProductId ?? 2);
+        setPeriods(
+          Array.isArray(parsed.periods) && parsed.periods.length
+            ? parsed.periods
+            : [
+                { id: 1, period: "يناير", revenue: 0, costs: 0 },
+                { id: 2, period: "فبراير", revenue: 0, costs: 0 },
+                { id: 3, period: "مارس", revenue: 0, costs: 0 },
+                { id: 4, period: "أبريل", revenue: 0, costs: 0 },
+              ]
+        );
+        setNextPeriodId(parsed.nextPeriodId ?? 5);
+      } else {
+        const theme = localStorage.getItem("theme");
+        if (theme) setDarkMode(theme === "dark");
+      }
+    } catch {
+      // ignore parse errors
+    } finally {
+      setMounted(true);
+    }
+  }, []);
+
+  /* ================= AUTO SAVE (Stage 1 UX) ================= */
+  useEffect(() => {
+    if (!mounted) return;
+    try {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          darkMode,
+          revenue,
+          costs,
+          products,
+          nextProductId,
+          periods,
+          nextPeriodId,
+        })
+      );
+      localStorage.setItem("theme", darkMode ? "dark" : "light");
+    } catch {
+      // ignore storage errors
+    }
+  }, [
+    darkMode,
+    revenue,
+    costs,
+    products,
+    nextProductId,
+    periods,
+    nextPeriodId,
+    mounted,
+  ]);
+
+  /* ================= CALCULATIONS ================= */
+  const profit = revenue - costs;
+  const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
+
+  const profitClass =
+    profit > 0 ? "text-green-400" : profit < 0 ? "text-red-400" : "text-gray-400";
+
+  /* ================= DATA LOGIC ================= */
   const addProduct = () => {
     setProducts((prev) => [
       ...prev,
@@ -70,11 +151,7 @@ export default function DataPage() {
     setNextProductId((x) => x + 1);
   };
 
-  const updateProduct = (
-    id: number,
-    field: "name" | "share",
-    value: string
-  ) => {
+  const updateProduct = (id: number, field: "name" | "share", value: string) => {
     setProducts((prev) =>
       prev.map((p) =>
         p.id === id
@@ -84,19 +161,15 @@ export default function DataPage() {
     );
   };
 
-  /* ===== Periods (LineChart حقيقي زمني) ===== */
-  const [periods, setPeriods] = useState<PeriodData[]>([
-    { id: 1, period: "يناير", revenue: 0, costs: 0 },
-    { id: 2, period: "فبراير", revenue: 0, costs: 0 },
-    { id: 3, period: "مارس", revenue: 0, costs: 0 },
-    { id: 4, period: "أبريل", revenue: 0, costs: 0 },
-  ]);
-  const [nextPeriodId, setNextPeriodId] = useState(5);
-
   const addPeriod = () => {
     setPeriods((prev) => [
       ...prev,
-      { id: nextPeriodId, period: `فترة ${prev.length + 1}`, revenue: 0, costs: 0 },
+      {
+        id: nextPeriodId,
+        period: `فترة ${prev.length + 1}`,
+        revenue: 0,
+        costs: 0,
+      },
     ]);
     setNextPeriodId((x) => x + 1);
   };
@@ -119,11 +192,7 @@ export default function DataPage() {
     );
   };
 
-  /* ===== Calculations ===== */
-  const profit = revenue - costs;
-  const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
-
-  /* ===== Charts Data ===== */
+  /* ================= CHART DATA ================= */
   const productRevenueChart = useMemo(
     () =>
       products.map((p) => ({
@@ -179,10 +248,8 @@ export default function DataPage() {
   const productColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
   const cashColors = ["#3b82f6", "#ef4444", "#10b981"];
 
-  /* ===== Guidance (مرتبط بالنتيجة + صياغة إرشادية) ===== */
-  let guidance =
-    "البيانات الحالية غير كافية لإظهار قراءة تحليلية ذات دلالة.";
-
+  /* ================= GUIDANCE (Legal-safe, result-related) ================= */
+  let guidance = "البيانات الحالية غير كافية لإظهار قراءة تحليلية ذات دلالة.";
   if (revenue > 0) {
     if (profit > 0 && margin >= 20) {
       guidance =
@@ -199,16 +266,14 @@ export default function DataPage() {
     }
   }
 
-  /* ===== PDF Export (حل قص الشعار + تعدد الصفحات) ===== */
+  /* ================= PDF EXPORT (working, multi-page) ================= */
   const exportPDF = async () => {
-    // فعّل وضع PDF لتصغير الشعار/تقليل الظلال ومنع أي قص
     setPdfMode(true);
 
-    // انتظر إطارين حتى ينعكس الـ DOM (بدون وعود زمنية للمستخدم)
+    // انتظر إطارين لتحديث DOM قبل الالتقاط
     await new Promise((r) => requestAnimationFrame(() => r(null)));
     await new Promise((r) => requestAnimationFrame(() => r(null)));
 
-    // اجعل الصفحة أعلى لضمان عدم قص الرأس
     window.scrollTo({ top: 0 });
 
     const element = document.getElementById("report");
@@ -220,7 +285,7 @@ export default function DataPage() {
     const canvas = await html2canvas(element, {
       scale: 2,
       useCORS: true,
-      backgroundColor: darkMode ? "#111827" : "#ffffff", // خلفية ثابتة
+      backgroundColor: darkMode ? "#111827" : "#ffffff",
       scrollY: -window.scrollY,
     });
 
@@ -237,11 +302,9 @@ export default function DataPage() {
     let heightLeft = imgHeight;
     let position = margin;
 
-    // الصفحة الأولى
     pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
 
-    // صفحات إضافية إذا كان المحتوى أطول من صفحة
     while (heightLeft > 0) {
       pdf.addPage();
       position = margin - (imgHeight - heightLeft);
@@ -250,23 +313,21 @@ export default function DataPage() {
     }
 
     pdf.save("بصيرة_تقرير_تحليلي.pdf");
-
-    // أوقف وضع PDF
     setPdfMode(false);
   };
 
   if (!mounted) return null;
 
-  /* ===== Shared input classes for Dark/Light ===== */
+  /* ================= UI CLASSES ================= */
   const inputClass = `w-full rounded-lg border px-4 py-2 mt-1 outline-none ${
     darkMode
       ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
       : "bg-white border-gray-300 text-gray-900 placeholder-gray-500"
   }`;
 
-  const cardClass = `rounded-2xl p-6 ${
-    pdfMode ? "shadow-none" : "shadow"
-  } ${darkMode ? "bg-gray-900" : "bg-white"}`;
+  const card = `rounded-2xl p-6 ${pdfMode ? "shadow-none" : "shadow"} ${
+    darkMode ? "bg-gray-900" : "bg-white"
+  }`;
 
   return (
     <main
@@ -278,7 +339,6 @@ export default function DataPage() {
         {/* Header */}
         <header className="flex items-center justify-between">
           <div className="flex items-center gap-6">
-            {/* شعار الشاشة */}
             <Image
               src="/brand/logo.png"
               alt="بصيرة"
@@ -316,28 +376,65 @@ export default function DataPage() {
           </div>
         </header>
 
-        {/* Summary Cards */}
+        {/* Stage 1 UX: رسالة إرشادية عند عدم إدخال بيانات */}
+        {revenue === 0 && costs === 0 && (
+<div
+  className={`rounded-xl px-6 py-5 text-center ${
+    darkMode
+      ? "bg-gray-800/60 text-gray-300"
+      : "bg-gray-100 text-gray-600"
+  }`}
+>
+  <p className="text-sm md:text-base font-medium">
+    أدخل الإيرادات والتكاليف لعرض قراءة تحليلية مبسطة لأدائك المالي
+  </p>
+</div>
+
+
+
+        )}
+
+        {/* Summary Cards (Stage 1: تنسيق الأرقام + إبراز الربح) */}
         <section className="grid grid-cols-4 gap-4">
-          {[
-            { label: "الإيرادات", value: revenue },
-            { label: "التكاليف", value: costs },
-            { label: "الربح", value: profit },
-            { label: "هامش الربح %", value: margin },
-          ].map((item, idx) => (
-            <div
-              key={idx}
-              className={`rounded-xl p-4 ${
-                pdfMode ? "shadow-none" : "shadow"
-              } ${darkMode ? "bg-gray-900" : "bg-white"}`}
-            >
-              <div className="text-sm text-gray-400">{item.label}</div>
-              <div className="text-2xl font-bold">{item.value}</div>
+          <div className={card}>
+            <div className="text-sm text-gray-400">الإيرادات</div>
+            <div className="text-2xl font-bold">{fmt(revenue)}</div>
+          </div>
+
+          <div className={card}>
+            <div className="text-sm text-gray-400">التكاليف</div>
+            <div className="text-2xl font-bold">{fmt(costs)}</div>
+          </div>
+
+          <div className={card}>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              صافي التدفق
+              <span
+                className="cursor-help"
+                title="الفرق الحسابي بين الإيرادات والتكاليف خلال الفترة."
+              >
+                ℹ️
+              </span>
             </div>
-          ))}
+            <div className={`text-2xl font-bold ${profitClass}`}>{fmt(profit)}</div>
+          </div>
+
+          <div className={card}>
+            <div className="flex items-center gap-2 text-sm text-gray-400">
+              هامش الربح
+              <span
+                className="cursor-help"
+                title="النسبة المتبقية من الإيرادات بعد خصم التكاليف، وفقًا للبيانات المدخلة."
+              >
+                ℹ️
+              </span>
+            </div>
+            <div className="text-2xl font-bold">{margin}%</div>
+          </div>
         </section>
 
         {/* Inputs */}
-        <section className={cardClass}>
+        <section className={card}>
           <h2 className="text-xl font-semibold mb-4">البيانات الأساسية</h2>
 
           <div className="grid grid-cols-2 gap-6">
@@ -363,8 +460,8 @@ export default function DataPage() {
           </div>
         </section>
 
-        {/* Cash Flow (مقارن واضح) */}
-        <section className={cardClass}>
+        {/* Cash Flow (BarChart) */}
+        <section className={card}>
           <h2 className="text-xl font-semibold mb-6">مؤشر التدفق المالي</h2>
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={cashFlowChart}>
@@ -381,8 +478,13 @@ export default function DataPage() {
           </ResponsiveContainer>
         </section>
 
-        {/* Periods (Editable) + Time Series LineChart */}
-        <section className={cardClass}>
+        {/* Stage 1 Micro-guidance */}
+        <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+          الخطوة التالية: توزيع الإيرادات على المنتجات، ثم مراجعة الفترات الزمنية والسيناريوهات قبل تصدير التقرير.
+        </p>
+
+        {/* Periods + LineChart */}
+        <section className={card}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">التدفق المالي عبر الزمن</h2>
             <button
@@ -395,7 +497,6 @@ export default function DataPage() {
             </button>
           </div>
 
-          {/* جدول إدخال الفترات */}
           <div className="space-y-3 mb-6">
             {periods.map((p) => (
               <div key={p.id} className="grid grid-cols-3 gap-4">
@@ -443,8 +544,8 @@ export default function DataPage() {
           </ResponsiveContainer>
         </section>
 
-        {/* Products (Editable) + BarChart */}
-        <section className={cardClass}>
+        {/* Products + BarChart */}
+        <section className={card}>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">مساهمة المنتجات في الإيرادات</h2>
             <button
@@ -500,7 +601,7 @@ export default function DataPage() {
         </section>
 
         {/* Scenarios */}
-        <section className={cardClass}>
+        <section className={card}>
           <h2 className="text-xl font-semibold mb-6">تحليل السيناريوهات</h2>
 
           <ResponsiveContainer width="100%" height={320}>
@@ -521,14 +622,19 @@ export default function DataPage() {
           </p>
         </section>
 
-        {/* Guidance (مرتبط بالنتيجة + حماية قانونية) */}
-        <section className={cardClass}>
+        {/* Guidance (Legal-safe) */}
+        <section className={card}>
           <h2 className="text-lg font-semibold mb-3">قراءة تحليلية إرشادية</h2>
           <p className={darkMode ? "text-gray-300" : "text-gray-700"}>{guidance}</p>
           <p className={`mt-3 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
             هذا العرض ذو طابع معلوماتي وتحليلي فقط، ولا يمثل توصية مباشرة أو غير مباشرة، ولا يُقصد به توجيه قرار مالي أو استثماري.
           </p>
         </section>
+
+        {/* Stage 1 Micro-guidance before PDF */}
+        <p className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+          راجع النتائج والرسوم، ثم استخدم زر “تصدير PDF” لحفظ نسخة من التقرير.
+        </p>
       </div>
     </main>
   );

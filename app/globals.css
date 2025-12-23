@@ -1,3 +1,34 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ===============================
+   Basira Design Tokens (UI System)
+   =============================== */
+
+:root {
+  /* ===== Page Surfaces ===== */
+  --surface-page-light: #f3f4f6;
+  --surface-page-dark: #1f2937;
+
+  /* ===== Card Surfaces ===== */
+  --surface-card-light: #ffffff;
+  --surface-card-dark: #111827;
+
+  /* ===== Soft / Empty States ===== */
+  --surface-soft-light: #f9fafb;
+  --surface-soft-dark: rgba(31, 41, 55, 0.6);
+
+  /* ===== Text Colors ===== */
+  --text-primary-light: #111827;
+  --text-primary-dark: #f9fafb;
+
+  --text-secondary-light: #6b7280;
+  --text-secondary-dark: #d1d5db;
+
+  /* ===== Accent Colors ===== */
+  --accent-primary: #2563eb; /* Basira Blue */
+  --accent-success: #22c55e;
+  --accent-warning: #f59e0b;
+  --accent-danger: #ef4444;
+}
