@@ -337,6 +337,34 @@ export default function IntermediateAnalysisPage() {
             توجيه قرار مالي أو استثماري.
           </p>
         </section>
+
+        {/* CTA – Upgrade to Advanced */}
+        <section
+          className={`rounded-2xl p-6 border ${
+            darkMode
+              ? "bg-gray-900 border-gray-700"
+              : "bg-white border-gray-300"
+          }`}
+        >
+          <h3 className="text-lg font-semibold mb-2">
+            تحتاج إلى تحليل احترافي أعمق؟
+          </h3>
+          <p
+            className={`text-sm mb-4 ${
+              darkMode ? "text-gray-300" : "text-gray-600"
+            }`}
+          >
+            التحليل المتقدم يوفّر ربط المنتجات بالإيرادات
+            وتحليلات أوسع تساعد على إعداد تقارير احترافية.
+          </p>
+
+          <Link
+            href="/data"
+            className="inline-flex items-center gap-2 rounded-lg bg-red-700 px-6 py-3 text-white font-semibold hover:bg-red-800 transition"
+          >
+            🚀 انتقل للتحليل المتقدم
+          </Link>
+        </section>
       </div>
     </main>
   );

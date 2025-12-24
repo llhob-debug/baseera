@@ -193,6 +193,34 @@ export default function BasicAnalysisPage() {
             قرار مالي أو استثماري.
           </p>
         </section>
+
+        {/* CTA – Upgrade */}
+        <section
+          className={`rounded-2xl p-6 border ${
+            darkMode
+              ? "bg-gray-900 border-gray-700"
+              : "bg-white border-gray-300"
+          }`}
+        >
+          <h3 className="text-lg font-semibold mb-2">
+            هل تحتاج إلى قراءة أعمق؟
+          </h3>
+          <p
+            className={`text-sm mb-4 ${
+              darkMode ? "text-gray-300" : "text-gray-600"
+            }`}
+          >
+            التحليل المتوسط يتيح لك فهم الأداء عبر الزمن
+            واستعراض سيناريوهات متعددة بصورة أوضح.
+          </p>
+
+          <Link
+            href="/intermediate"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-6 py-3 text-white font-semibold hover:bg-blue-800 transition"
+          >
+            🔍 احصل على تحليل أعمق
+          </Link>
+        </section>
       </div>
     </main>
   );
