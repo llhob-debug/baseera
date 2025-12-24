@@ -32,18 +32,18 @@ export default function BasicAnalysisPage() {
 
   /* ===== Guidance ===== */
   let guidance =
-    "أدخل الإيرادات والتكاليف لعرض قراءة مبسطة للوضع المالي الحالي.";
+    "أدخل الإيرادات والتكاليف لعرض قراءة تجريبية مبسطة للوضع المالي الحالي.";
 
   if (revenue > 0) {
     if (profit > 0) {
       guidance =
-        "تشير القيم المدخلة إلى وجود فائض تشغيلي وفق الحسابات الأساسية لهذه الفترة.";
+        "تشير القيم المدخلة إلى وجود فائض تشغيلي وفق قراءة توضـيحية مبسطة لهذه الفترة.";
     } else if (profit === 0) {
       guidance =
-        "تشير القيم المدخلة إلى نقطة تعادل بين الإيرادات والتكاليف.";
+        "تشير القيم المدخلة إلى نقطة تعادل بين الإيرادات والتكاليف ضمن قراءة أساسية.";
     } else {
       guidance =
-        "تشير القيم المدخلة إلى أن التكاليف تتجاوز الإيرادات وفق الحسابات الأساسية.";
+        "تشير القيم المدخلة إلى أن التكاليف تتجاوز الإيرادات وفق قراءة أولية غير تفصيلية.";
     }
   }
 
@@ -76,7 +76,12 @@ export default function BasicAnalysisPage() {
               height={140}
               priority
             />
-            <h1 className="text-2xl font-bold">تحليل أساسي</h1>
+            <div>
+              <h1 className="text-2xl font-bold">القراءة الأساسية</h1>
+              <p className="text-sm text-gray-400 mt-1">
+                قراءة سريعة لحالة واحدة دون تحليل زمني أو سيناريوهات مستقبلية
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -109,9 +114,10 @@ export default function BasicAnalysisPage() {
               <label className="text-sm font-medium">الإيرادات</label>
               <input
                 type="number"
+                min={0}
                 value={revenue}
                 onChange={(e) =>
-                  setRevenue(Number(e.target.value))
+                  setRevenue(Math.max(0, Number(e.target.value)))
                 }
                 className={inputClass}
               />
@@ -121,9 +127,10 @@ export default function BasicAnalysisPage() {
               <label className="text-sm font-medium">التكاليف</label>
               <input
                 type="number"
+                min={0}
                 value={costs}
                 onChange={(e) =>
-                  setCosts(Number(e.target.value))
+                  setCosts(Math.max(0, Number(e.target.value)))
                 }
                 className={inputClass}
               />
@@ -134,7 +141,7 @@ export default function BasicAnalysisPage() {
         {/* Results */}
         <section className="grid grid-cols-3 gap-4">
           <div className={cardClass}>
-            <div className="text-sm text-gray-400">الربح</div>
+            <div className="text-sm text-gray-400">النتيجة</div>
             <div
               className={`text-2xl font-bold ${
                 profit > 0
@@ -144,13 +151,13 @@ export default function BasicAnalysisPage() {
                   : ""
               }`}
             >
-              {profit}
+              {profit.toLocaleString("ar-SA")}
             </div>
           </div>
 
           <div className={cardClass}>
             <div className="text-sm text-gray-400">
-              هامش الربح %
+              الهامش التقريبي %
             </div>
             <div className="text-2xl font-bold">
               {margin}%
@@ -188,13 +195,12 @@ export default function BasicAnalysisPage() {
               darkMode ? "text-gray-400" : "text-gray-600"
             }`}
           >
-            هذا التحليل ذو طابع معلوماتي مبسط فقط، ولا يمثل
-            توصية مباشرة أو غير مباشرة، ولا يُقصد به توجيه
-            قرار مالي أو استثماري.
+            هذه القراءة لأغراض تجريبية وتوضيحية فقط، ولا تمثل
+            توصية مالية أو استثمارية، ولا تُستخدم لاتخاذ قرارات.
           </p>
         </section>
 
-        {/* CTA – Upgrade */}
+        {/* CTA – Trial Exploration */}
         <section
           className={`rounded-2xl p-6 border ${
             darkMode
@@ -203,22 +209,22 @@ export default function BasicAnalysisPage() {
           }`}
         >
           <h3 className="text-lg font-semibold mb-2">
-            هل تحتاج إلى قراءة أعمق؟
+            هل ترغب في استكشاف قراءة موسعة؟
           </h3>
           <p
             className={`text-sm mb-4 ${
               darkMode ? "text-gray-300" : "text-gray-600"
             }`}
           >
-            التحليل المتوسط يتيح لك فهم الأداء عبر الزمن
-            واستعراض سيناريوهات متعددة بصورة أوضح.
+            المستوى التالي يضيف بعد الزمن والمقارنة بين الفترات،
+            ويُعرض حاليًا ضمن التجربة الاستكشافية للمنصة.
           </p>
 
           <Link
             href="/intermediate"
             className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-6 py-3 text-white font-semibold hover:bg-blue-800 transition"
           >
-            🔍 احصل على تحليل أعمق
+            📈 استكشاف القراءة الموسعة
           </Link>
         </section>
       </div>

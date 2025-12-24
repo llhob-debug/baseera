@@ -8,10 +8,9 @@ export default function HomePage() {
     <main className="relative min-h-screen">
       {/* HERO SECTION */}
       <section className="relative h-screen w-full overflow-hidden">
-        {/* Background Image */}
         <Image
           src="/brand/hero.png"
-          alt="تحليل الأداء التجاري"
+          alt="قراءات تحليلية تجريبية"
           fill
           priority
           className="object-cover"
@@ -21,14 +20,14 @@ export default function HomePage() {
         {/* Overlay */}
         <div className="absolute inset-0 bg-black/60" />
 
-        {/* نسخة تجريبية – أعلى يسار */}
+        {/* Trial Badge */}
         <div className="absolute top-6 left-6 z-20">
           <span className="inline-flex items-center rounded-full bg-green-600/90 px-4 py-1 text-sm font-semibold text-white shadow-lg">
-            نسخة تجريبية
+            تجربة استكشافية
           </span>
         </div>
 
-        {/* Logo – Top Right */}
+        {/* Logo */}
         <div className="absolute top-6 right-6 z-20">
           <Image
             src="/brand/logo.png"
@@ -44,41 +43,44 @@ export default function HomePage() {
         <div className="relative z-10 flex h-full items-center justify-center px-6 text-center text-white">
           <div className="max-w-3xl">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
-              افهم أداء نشاطك التجاري بوضوح
+              قراءة أوضح لأداء نشاطك التجاري
             </h1>
 
             <p className="mt-6 text-base md:text-lg text-gray-200">
-              بصيرة تساعدك على قراءة أرقامك التجارية وفهم وضعك المالي الحالي
-              بلغة بسيطة، بدون تعقيد وبدون مصطلحات محاسبية.
+              تقدم بصيرة قراءات تحليلية مبسطة لأغراض تجريبية،
+              تساعدك على فهم الصورة العامة للأداء المالي
+              بلغة واضحة وبدون تعقيد.
             </p>
 
-            {/* CTA Buttons */}
-            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/basic"
-                className="rounded-xl bg-green-700 px-8 py-4 text-white text-lg font-semibold hover:bg-green-800 transition"
+            {/* PRIMARY CTA */}
+            <div className="mt-14 flex flex-col items-center gap-3">
+              <button
+                onClick={() =>
+                  document
+                    .getElementById("comparison")
+                    ?.scrollIntoView({ behavior: "smooth" })
+                }
+                className="
+                  px-24 py-3.5
+                  bg-orange-500
+                  hover:bg-orange-600
+                  text-white text-lg font-medium
+                  rounded-md
+                  transition
+                  shadow-sm
+                "
               >
-                تحليل أساسي
-              </Link>
+                🔍 استكشاف القراءات التحليلية
+              </button>
 
-              <Link
-                href="/intermediate"
-                className="rounded-xl bg-blue-700 px-8 py-4 text-white text-lg font-semibold hover:bg-blue-800 transition"
-              >
-                تحليل متوسط
-              </Link>
-
-              <Link
-                href="/data"
-                className="rounded-xl bg-red-700 px-8 py-4 text-white text-lg font-semibold hover:bg-red-800 transition"
-              >
-                تحليل متقدم
-              </Link>
+              <span className="text-sm text-gray-300">
+                المحتوى المعروض لأغراض تجريبية وتوضيحية فقط
+              </span>
             </div>
           </div>
         </div>
 
-        {/* Scroll Hint – Centered */}
+        {/* Scroll Hint */}
         <button
           onClick={() =>
             document
@@ -88,7 +90,7 @@ export default function HomePage() {
           className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 text-base md:text-lg font-medium text-gray-300 animate-pulse hover:text-white transition z-20"
         >
           <span className="text-center">
-            انزل اسفل الصفحة وتعرّف على الفرق بين مستويات التحليل
+            تعرّف على مستويات التحليل المتاحة
           </span>
 
           <svg
@@ -107,56 +109,62 @@ export default function HomePage() {
         </button>
       </section>
 
-      {/* COMPARISON SECTION */}
+      {/* TOOLS SECTION */}
       <section
         id="comparison"
         className="bg-gray-100 px-6 py-20 text-gray-900"
       >
         <div className="mx-auto max-w-6xl">
-          <h2 className="text-2xl md:text-3xl font-bold text-center mb-12">
-            اختر مستوى التحليل المناسب لك
+          <h2 className="text-2xl md:text-3xl font-bold text-center mb-4">
+            مستويات التحليل التجريبي
           </h2>
+
+          <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
+            تبدأ التجربة بقراءة أساسية مبسطة، ثم تتدرج نحو
+            قراءات أوسع تهدف إلى توضيح الفكرة العامة دون
+            الدخول في توصيات أو قرارات.
+          </p>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {/* Basic */}
             <div className="rounded-2xl bg-white p-6 shadow">
               <h3 className="text-xl font-semibold text-green-700 mb-3">
-                التحليل الأساسي
+                القراءة الأساسية
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                مناسب للحصول على نظرة أولية سريعة على وضعك المالي الحالي.
+                قراءة سريعة لحالة مالية واحدة.
               </p>
               <ul className="text-sm space-y-2 mb-6">
                 <li>• إدخال الإيرادات والتكاليف</li>
-                <li>• صافي الربح وهامش الربح</li>
+                <li>• صافي الربح والهامش</li>
                 <li>• قراءة إرشادية مبسطة</li>
               </ul>
               <Link
                 href="/basic"
                 className="inline-block rounded-lg bg-green-700 px-5 py-2 text-white text-sm font-semibold hover:bg-green-800 transition"
               >
-                ابدأ التحليل الأساسي
+                استكشاف القراءة
               </Link>
             </div>
 
             {/* Intermediate */}
             <div className="rounded-2xl bg-white p-6 shadow">
               <h3 className="text-xl font-semibold text-blue-700 mb-3">
-                التحليل المتوسط
+                القراءة الموسعة
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                لفهم الأداء بصورة أعمق من خلال توزيع الإيرادات وتحليل التدفق.
+                استكشاف توزيع الإيرادات ومؤشرات إضافية.
               </p>
               <ul className="text-sm space-y-2 mb-6">
                 <li>• توزيع الإيرادات على المنتجات</li>
                 <li>• مؤشر التدفق المالي</li>
-                <li>• قراءة تحليلية أوسع</li>
+                <li>• قراءة تحليلية موسعة</li>
               </ul>
               <Link
                 href="/intermediate"
                 className="inline-block rounded-lg bg-blue-700 px-5 py-2 text-white text-sm font-semibold hover:bg-blue-800 transition"
               >
-                انتقل للتحليل المتوسط
+                استكشاف القراءة
               </Link>
             </div>
 
@@ -166,21 +174,28 @@ export default function HomePage() {
                 التحليل المتقدم
               </h3>
               <p className="text-sm text-gray-600 mb-4">
-                مستوى احترافي لإعداد تقارير شاملة ودعم اتخاذ القرار.
+                عرض توضيحي لأبعاد تحليلية أعمق.
               </p>
               <ul className="text-sm space-y-2 mb-6">
                 <li>• تحليل الفترات الزمنية</li>
                 <li>• سيناريوهات متعددة</li>
-                <li>• تقارير PDF احترافية</li>
+                <li>• أمثلة تقارير تحليلية</li>
               </ul>
               <Link
                 href="/data"
                 className="inline-block rounded-lg bg-red-700 px-5 py-2 text-white text-sm font-semibold hover:bg-red-800 transition"
               >
-                انتقل للتحليل المتقدم
+                عرض توضيحي
               </Link>
             </div>
           </div>
+
+          {/* Disclaimer */}
+          <p className="mt-16 text-center text-sm text-gray-500 max-w-4xl mx-auto">
+            المحتوى المعروض ضمن هذه المنصة مقدم لأغراض تجريبية
+            وتوضيحية فقط، ولا يمثل توصية مالية أو استثمارية
+            أو تشغيلية، ولا يُقصد به توجيه أي قرار.
+          </p>
         </div>
       </section>
     </main>

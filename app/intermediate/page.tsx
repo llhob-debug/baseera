@@ -95,18 +95,18 @@ export default function IntermediateAnalysisPage() {
 
   /* ===== Guidance ===== */
   let guidance =
-    "أدخل البيانات الأساسية ثم وزّع الإيرادات على المنتجات للحصول على قراءة أوضح.";
+    "أدخل البيانات ثم وزّع الإيرادات على المنتجات لاستكشاف صورة أوضح للأداء.";
 
   if (revenue > 0) {
     if (profit > 0) {
       guidance =
-        "تشير القيم المدخلة إلى فائض تشغيلي، مع إظهار مساهمة كل منتج في الإيرادات.";
+        "تشير القيم المدخلة إلى فائض تشغيلي، مع توضيح مساهمة كل منتج في الإيرادات ضمن قراءة موسعة.";
     } else if (profit === 0) {
       guidance =
-        "تشير القيم المدخلة إلى نقطة تعادل بين الإيرادات والتكاليف.";
+        "تشير القيم المدخلة إلى نقطة تعادل بين الإيرادات والتكاليف ضمن قراءة موسعة.";
     } else {
       guidance =
-        "تشير القيم المدخلة إلى عجز تشغيلي وفق الحسابات المتوسطة.";
+        "تشير القيم المدخلة إلى أن التكاليف تتجاوز الإيرادات وفق قراءة موسعة غير تفصيلية.";
     }
   }
 
@@ -139,7 +139,12 @@ export default function IntermediateAnalysisPage() {
               height={140}
               priority
             />
-            <h1 className="text-2xl font-bold">تحليل متوسط</h1>
+            <div>
+              <h1 className="text-2xl font-bold">القراءة الموسعة</h1>
+              <p className="text-sm text-gray-400 mt-1">
+                استكشاف الأداء عبر توزيع الإيرادات دون تحليل تاريخي أو تنبؤي
+              </p>
+            </div>
           </div>
 
           <div className="flex gap-3">
@@ -172,9 +177,10 @@ export default function IntermediateAnalysisPage() {
               <label className="text-sm font-medium">الإيرادات</label>
               <input
                 type="number"
+                min={0}
                 value={revenue}
                 onChange={(e) =>
-                  setRevenue(Number(e.target.value))
+                  setRevenue(Math.max(0, Number(e.target.value)))
                 }
                 className={inputClass}
               />
@@ -184,9 +190,10 @@ export default function IntermediateAnalysisPage() {
               <label className="text-sm font-medium">التكاليف</label>
               <input
                 type="number"
+                min={0}
                 value={costs}
                 onChange={(e) =>
-                  setCosts(Number(e.target.value))
+                  setCosts(Math.max(0, Number(e.target.value)))
                 }
                 className={inputClass}
               />
@@ -197,7 +204,7 @@ export default function IntermediateAnalysisPage() {
         {/* Summary */}
         <section className="grid grid-cols-3 gap-4">
           <div className={cardClass}>
-            <div className="text-sm text-gray-400">الربح</div>
+            <div className="text-sm text-gray-400">النتيجة</div>
             <div
               className={`text-2xl font-bold ${
                 profit > 0
@@ -207,13 +214,13 @@ export default function IntermediateAnalysisPage() {
                   : ""
               }`}
             >
-              {profit}
+              {profit.toLocaleString("ar-SA")}
             </div>
           </div>
 
           <div className={cardClass}>
             <div className="text-sm text-gray-400">
-              هامش الربح %
+              الهامش التقريبي %
             </div>
             <div className="text-2xl font-bold">
               {margin}%
@@ -247,10 +254,7 @@ export default function IntermediateAnalysisPage() {
               <ReferenceLine y={0} stroke="#9ca3af" />
               <Bar dataKey="value">
                 {cashFlowChart.map((_, i) => (
-                  <Cell
-                    key={i}
-                    fill={colors[i % colors.length]}
-                  />
+                  <Cell key={i} fill={colors[i % colors.length]} />
                 ))}
               </Bar>
             </BarChart>
@@ -275,10 +279,7 @@ export default function IntermediateAnalysisPage() {
 
           <div className="space-y-3 mb-6">
             {products.map((p) => (
-              <div
-                key={p.id}
-                className="grid grid-cols-2 gap-4"
-              >
+              <div key={p.id} className="grid grid-cols-2 gap-4">
                 <input
                   value={p.name}
                   onChange={(e) =>
@@ -305,10 +306,7 @@ export default function IntermediateAnalysisPage() {
               <Tooltip />
               <Bar dataKey="value">
                 {productChart.map((_, i) => (
-                  <Cell
-                    key={i}
-                    fill={colors[i % colors.length]}
-                  />
+                  <Cell key={i} fill={colors[i % colors.length]} />
                 ))}
               </Bar>
             </BarChart>
@@ -320,11 +318,7 @@ export default function IntermediateAnalysisPage() {
           <h2 className="text-lg font-semibold mb-2">
             قراءة إرشادية
           </h2>
-          <p
-            className={
-              darkMode ? "text-gray-300" : "text-gray-700"
-            }
-          >
+          <p className={darkMode ? "text-gray-300" : "text-gray-700"}>
             {guidance}
           </p>
           <p
@@ -332,13 +326,13 @@ export default function IntermediateAnalysisPage() {
               darkMode ? "text-gray-400" : "text-gray-600"
             }`}
           >
-            هذا التحليل ذو طابع معلوماتي وتحليلي متوسط، ولا
-            يمثل توصية مباشرة أو غير مباشرة، ولا يُقصد به
-            توجيه قرار مالي أو استثماري.
+            المحتوى المعروض لأغراض تجريبية وتوضيحية فقط،
+            ولا يمثل توصية مالية أو استثمارية أو تشغيلية،
+            ولا يُقصد به توجيه أي قرار.
           </p>
         </section>
 
-        {/* CTA – Upgrade to Advanced */}
+        {/* CTA – Trial Exploration */}
         <section
           className={`rounded-2xl p-6 border ${
             darkMode
@@ -347,22 +341,22 @@ export default function IntermediateAnalysisPage() {
           }`}
         >
           <h3 className="text-lg font-semibold mb-2">
-            تحتاج إلى تحليل احترافي أعمق؟
+            هل ترغب في استكشاف التحليل المتقدم؟
           </h3>
           <p
             className={`text-sm mb-4 ${
               darkMode ? "text-gray-300" : "text-gray-600"
             }`}
           >
-            التحليل المتقدم يوفّر ربط المنتجات بالإيرادات
-            وتحليلات أوسع تساعد على إعداد تقارير احترافية.
+            المستوى التالي يضيف أبعادًا تحليلية أوسع
+            ويُعرض حاليًا ضمن التجربة الاستكشافية للمنصة.
           </p>
 
           <Link
             href="/data"
-            className="inline-flex items-center gap-2 rounded-lg bg-red-700 px-6 py-3 text-white font-semibold hover:bg-red-800 transition"
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-6 py-3 text-white font-semibold hover:bg-blue-800 transition"
           >
-            🚀 انتقل للتحليل المتقدم
+            🔍 استكشاف التحليل المتقدم
           </Link>
         </section>
       </div>
