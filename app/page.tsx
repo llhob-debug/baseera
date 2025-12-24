@@ -52,13 +52,34 @@ export default function HomePage() {
               بلغة بسيطة، بدون تعقيد وبدون مصطلحات محاسبية.
             </p>
 
-            {/* CTA Button → /data */}
-            <Link
-              href="/data"
-              className="mt-8 inline-block rounded-xl bg-white px-8 py-4 text-black text-lg font-semibold hover:bg-gray-200 transition"
-            >
-              ابدأ التحليل الآن
-            </Link>
+            {/* CTA Buttons */}
+            <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+
+              {/* تحليل أساسي */}
+              <Link
+                href="/basic"
+                className="rounded-xl bg-green-700 px-8 py-4 text-white text-lg font-semibold hover:bg-green-800 transition"
+              >
+                تحليل أساسي
+              </Link>
+
+              {/* تحليل متوسط */}
+              <Link
+                href="/intermediate"
+                className="rounded-xl bg-blue-700 px-8 py-4 text-white text-lg font-semibold hover:bg-blue-800 transition"
+              >
+                تحليل متوسط
+              </Link>
+
+              {/* تحليل متقدم */}
+              <Link
+                href="/data"
+                className="rounded-xl bg-red-700 px-8 py-4 text-white text-lg font-semibold hover:bg-red-800 transition"
+              >
+                تحليل متقدم
+              </Link>
+
+            </div>
 
           </div>
         </div>
