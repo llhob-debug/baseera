@@ -1,11 +1,25 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "بصيرة",
-  description: "منصة تحليل الأداء التجاري",
-
-  verification: {
-    google: "_DOmBgYH39EQyqkgjvZwBZRx4OFvFfsGTM99b_CmFe4",
+  title: {
+    default: "بصيرة | تحليل الأداء التجاري",
+    template: "%s | بصيرة",
+  },
+  description:
+    "بصيرة منصة عربية لتحليل الأداء المالي والتجاري، تساعدك على فهم الإيرادات والتكاليف واتخاذ قرارات أفضل.",
+  keywords: [
+    "تحليل مالي",
+    "تحليل الأداء التجاري",
+    "إدارة الأعمال",
+    "تحليل الإيرادات",
+    "منصة عربية",
+  ],
+  authors: [{ name: "Basira" }],
+  creator: "Basira",
+  publisher: "Basira",
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
