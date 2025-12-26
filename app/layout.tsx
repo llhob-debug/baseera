@@ -1,26 +1,22 @@
 import "./globals.css";
+import type { Metadata } from "next";
+import Script from "next/script";
 
-export const metadata = {
-  title: {
-    default: "بصيرة | تحليل الأداء التجاري",
-    template: "%s | بصيرة",
-  },
+export const metadata: Metadata = {
+  title: "بصيرة | قراءات تحليلية تجريبية للأداء التجاري",
   description:
-    "بصيرة منصة عربية لتحليل الأداء المالي والتجاري، تساعدك على فهم الإيرادات والتكاليف واتخاذ قرارات أفضل.",
-  keywords: [
-    "تحليل مالي",
-    "تحليل الأداء التجاري",
-    "إدارة الأعمال",
-    "تحليل الإيرادات",
-    "منصة عربية",
-  ],
-  authors: [{ name: "Basira" }],
-  creator: "Basira",
-  publisher: "Basira",
+    "بصيرة منصة تجريبية تقدم قراءات تحليلية مبسطة تساعد على فهم الأداء المالي للنشاط التجاري بلغة واضحة وبدون تعقيد أو توصيات.",
   robots: {
     index: true,
     follow: true,
   },
+  keywords: [
+    "تحليل مالي",
+    "قراءات تحليلية",
+    "أداء تجاري",
+    "منصة تحليل",
+    "بصيرة",
+  ],
 };
 
 export default function RootLayout({
@@ -30,6 +26,21 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
+      <head>
+        {/* Google Analytics 4 */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-FHF6KBBFM9"
+          strategy="afterInteractive"
+        />
+        <Script id="ga4-init" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-FHF6KBBFM9');
+          `}
+        </Script>
+      </head>
       <body>{children}</body>
     </html>
   );
