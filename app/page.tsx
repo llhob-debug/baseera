@@ -23,7 +23,7 @@ export default function HomePage() {
         {/* Trial Badge */}
         <div className="absolute top-6 left-6 z-20">
           <span className="inline-flex items-center rounded-full bg-green-600/90 px-4 py-1 text-sm font-semibold text-white shadow-lg">
-            تجربة استكشافية
+            نسخة تجريبية مؤقتة
           </span>
         </div>
 
