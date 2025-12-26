@@ -23,30 +23,35 @@ import {
 type Product = {
   id: number;
   name: string;
-  share: number; // % من الإيرادات
+  share: number;
 };
 
 type PeriodData = {
   id: number;
-  period: string; // مثال: يناير 2025
+  period: string;
   revenue: number;
   costs: number;
 };
 
 /* ================= HELPERS ================= */
-const clamp = (n: number, min: number, max: number) => Math.max(min, Math.min(max, n));
-const safeNumber = (n: any) => (Number.isFinite(Number(n)) ? Number(n) : 0);
+const clamp = (n: number, min: number, max: number) =>
+  Math.max(min, Math.min(max, n));
 
-function median(values: number[]) {
+const safeNumber = (n: any) =>
+  Number.isFinite(Number(n)) ? Number(n) : 0;
+
+const median = (values: number[]) => {
+  if (!values.length) return 0;
   const arr = [...values].sort((a, b) => a - b);
-  if (arr.length === 0) return 0;
   const mid = Math.floor(arr.length / 2);
-  return arr.length % 2 ? arr[mid] : (arr[mid - 1] + arr[mid]) / 2;
-}
+  return arr.length % 2
+    ? arr[mid]
+    : (arr[mid - 1] + arr[mid]) / 2;
+};
 
 /* ================= COMPONENT ================= */
 export default function DataPage() {
-  /* ===== Theme (SSR-safe) ===== */
+  /* ===== Theme ===== */
   const [mounted, setMounted] = useState(false);
   const [darkMode, setDarkMode] = useState(true);
 
@@ -57,26 +62,27 @@ export default function DataPage() {
   }, []);
 
   useEffect(() => {
-    if (mounted) localStorage.setItem("theme", darkMode ? "dark" : "light");
+    if (mounted)
+      localStorage.setItem("theme", darkMode ? "dark" : "light");
   }, [darkMode, mounted]);
 
-  /* ===== PDF Mode (لمنع قص الشعار + تحسين الالتقاط) ===== */
+  /* ===== PDF ===== */
   const [pdfMode, setPdfMode] = useState(false);
 
   /* ===== Core Inputs ===== */
-  const [revenue, setRevenue] = useState<number>(0);
-  const [costs, setCosts] = useState<number>(0);
+  const [revenue, setRevenue] = useState(0);
+  const [costs, setCosts] = useState(0);
 
-  /* ===== Products (مرتبط بالإيرادات) ===== */
+  /* ===== Products ===== */
   const [products, setProducts] = useState<Product[]>([
     { id: 1, name: "منتج 1", share: 100 },
   ]);
   const [nextProductId, setNextProductId] = useState(2);
 
   const addProduct = () => {
-    setProducts((prev) => [
-      ...prev,
-      { id: nextProductId, name: `منتج ${prev.length + 1}`, share: 0 },
+    setProducts((p) => [
+      ...p,
+      { id: nextProductId, name: `منتج ${p.length + 1}`, share: 0 },
     ]);
     setNextProductId((x) => x + 1);
   };
@@ -86,16 +92,16 @@ export default function DataPage() {
     field: "name" | "share",
     value: string
   ) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, [field]: field === "share" ? safeNumber(value) : value }
-          : p
+    setProducts((p) =>
+      p.map((x) =>
+        x.id === id
+          ? { ...x, [field]: field === "share" ? safeNumber(value) : value }
+          : x
       )
     );
   };
 
-  /* ===== Periods (LineChart حقيقي زمني) ===== */
+  /* ===== Periods ===== */
   const [periods, setPeriods] = useState<PeriodData[]>([
     { id: 1, period: "يناير", revenue: 0, costs: 0 },
     { id: 2, period: "فبراير", revenue: 0, costs: 0 },
@@ -105,14 +111,9 @@ export default function DataPage() {
   const [nextPeriodId, setNextPeriodId] = useState(5);
 
   const addPeriod = () => {
-    setPeriods((prev) => [
-      ...prev,
-      {
-        id: nextPeriodId,
-        period: `فترة ${prev.length + 1}`,
-        revenue: 0,
-        costs: 0,
-      },
+    setPeriods((p) => [
+      ...p,
+      { id: nextPeriodId, period: `فترة ${p.length + 1}`, revenue: 0, costs: 0 },
     ]);
     setNextPeriodId((x) => x + 1);
   };
@@ -122,30 +123,31 @@ export default function DataPage() {
     field: "period" | "revenue" | "costs",
     value: string
   ) => {
-    setPeriods((prev) =>
-      prev.map((p) =>
-        p.id === id
+    setPeriods((p) =>
+      p.map((x) =>
+        x.id === id
           ? {
-              ...p,
+              ...x,
               [field]:
-                field === "revenue" || field === "costs" ? safeNumber(value) : value,
+                field === "revenue" || field === "costs"
+                  ? safeNumber(value)
+                  : value,
             }
-          : p
+          : x
       )
     );
   };
 
-  /* ===== Calculations ===== */
+  /* ===== Core Metrics ===== */
   const profit = revenue - costs;
   const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
-
   /* ===== Charts Data ===== */
   const productRevenueChart = useMemo(
     () =>
       products.map((p) => ({
         name: p.name,
         value: Math.round((revenue * (Number.isFinite(p.share) ? p.share : 0)) / 100),
-        share: p.share,
+        share: safeNumber(p.share),
       })),
     [products, revenue]
   );
@@ -200,9 +202,9 @@ export default function DataPage() {
 
   const productColors = ["#3b82f6", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
   const cashColors = ["#3b82f6", "#ef4444", "#10b981"];
-  /* ===== Guidance (مرتبط بالنتيجة + صياغة إرشادية) ===== */
-  let guidance = "البيانات الحالية غير كافية لإظهار قراءة تحليلية ذات دلالة.";
 
+  /* ===== Guidance (مبسطة ومحايدة Demo-safe) ===== */
+  let guidance = "البيانات الحالية غير كافية لإظهار قراءة تحليلية ذات دلالة.";
   if (revenue > 0) {
     if (profit > 0 && margin >= 20) {
       guidance =
@@ -250,23 +252,46 @@ export default function DataPage() {
     }));
   }, [revenue, costs, sensitivityRate]);
 
-  /* ================= ADVANCED (Hybrid) ANALYTICS LAYER ================= */
+  /* ================= ADVANCED ANALYTICS ================= */
   const breakEvenRevenue = useMemo(() => costs, [costs]);
-  const safetyMarginValue = useMemo(() => Math.max(0, revenue - breakEvenRevenue), [revenue, breakEvenRevenue]);
-  const safetyMarginPct = useMemo(() => (revenue > 0 ? Math.round((safetyMarginValue / revenue) * 100) : 0), [revenue, safetyMarginValue]);
+  const safetyMarginValue = useMemo(
+    () => Math.max(0, revenue - breakEvenRevenue),
+    [revenue, breakEvenRevenue]
+  );
+  const safetyMarginPct = useMemo(
+    () => (revenue > 0 ? Math.round((safetyMarginValue / revenue) * 100) : 0),
+    [revenue, safetyMarginValue]
+  );
 
-  const costPressureRatio = useMemo(() => (revenue > 0 ? costs / revenue : 0), [costs, revenue]); // كلما ارتفع زاد الضغط
-  const netCashQuality = useMemo(() => (revenue > 0 ? profit / revenue : 0), [profit, revenue]);
+  const costPressureRatio = useMemo(
+    () => (revenue > 0 ? costs / revenue : 0),
+    [costs, revenue]
+  );
 
-  const productShares = useMemo(() => products.map((p) => clamp(safeNumber(p.share), 0, 100)), [products]);
-  const topShare = useMemo(() => (productShares.length ? Math.max(...productShares) : 0), [productShares]);
+  const netCashQuality = useMemo(
+    () => (revenue > 0 ? profit / revenue : 0),
+    [profit, revenue]
+  );
+
+  const productShares = useMemo(
+    () => products.map((p) => clamp(safeNumber(p.share), 0, 100)),
+    [products]
+  );
+
+  const topShare = useMemo(
+    () => (productShares.length ? Math.max(...productShares) : 0),
+    [productShares]
+  );
+
   const concentrationIndex = useMemo(() => {
-    // Herfindahl-Hirschman-ish on percentage shares (0..100)
-    const s = productShares.map((x) => (x / 100) ** 2).reduce((a, b) => a + b, 0);
+    const s = productShares
+      .map((x) => (x / 100) ** 2)
+      .reduce((a, b) => a + b, 0);
     return s; // 0..1
   }, [productShares]);
 
   const periodNets = useMemo(() => periodsChart.map((p) => safeNumber(p.net)), [periodsChart]);
+
   const volatility = useMemo(() => {
     if (periodNets.length < 2) return 0;
     const diffs = periodNets.slice(1).map((v, i) => Math.abs(v - periodNets[i]));
@@ -291,6 +316,7 @@ export default function DataPage() {
     if (topShare >= 70) score += 15;
     if (volatility > Math.abs(profit) && volatility > 0) score += 15;
     if (revenue === 0 && costs > 0) score += 30;
+
     const s = clamp(score, 0, 100);
     if (s >= 70) return "مرتفع";
     if (s >= 40) return "متوسط";
@@ -301,17 +327,21 @@ export default function DataPage() {
     // 0..100 (higher better)
     let score = 100;
     if (profit < 0) score -= 40;
-    score -= clamp((0.9 - (1 - costPressureRatio)) * 20, 0, 20); // إذا التكاليف مرتفعة
-    score -= clamp((70 - margin) * 0.3, 0, 25); // هامش منخفض
-    score -= clamp((topShare - 50) * 0.5, 0, 20); // تركّز
-    score -= clamp(volatility / 1000, 0, 15); // تذبذب تقريبي
+    // ضغط التكاليف
+    score -= clamp(costPressureRatio * 25, 0, 25);
+    // هامش ربح منخفض
+    score -= clamp((20 - margin) * 1.2, 0, 25);
+    // تركّز المنتجات
+    score -= clamp((topShare - 50) * 0.5, 0, 20);
+    // تذبذب تقريبي
+    score -= clamp(volatility / 1000, 0, 15);
     return Math.round(clamp(score, 0, 100));
   }, [profit, costPressureRatio, margin, topShare, volatility]);
 
   const statusBadge = useMemo(() => {
-    if (healthScore >= 75) return { label: "مستقر", tone: "green" };
-    if (healthScore >= 50) return { label: "تحت المراقبة", tone: "yellow" };
-    return { label: "خطر", tone: "red" };
+    if (healthScore >= 75) return { label: "مستقر", tone: "green" as const };
+    if (healthScore >= 50) return { label: "تحت المراقبة", tone: "yellow" as const };
+    return { label: "خطر", tone: "red" as const };
   }, [healthScore]);
 
   const focusAxis = useMemo(() => {
@@ -324,16 +354,16 @@ export default function DataPage() {
 
   const narrative = useMemo(() => {
     if (revenue <= 0 && costs <= 0) {
-      return "لا توجد بيانات مالية كافية لبناء قراءة استراتيجية. أدخل الإيرادات والتكاليف وأضف بعض الفترات والمنتجات للحصول على تحليل أعمق.";
+      return "لا توجد بيانات مالية كافية لبناء قراءة استراتيجية. أدخل الإيرادات والتكاليف وأضف فترات ومنتجات للحصول على تحليل أعمق.";
     }
     const parts: string[] = [];
     parts.push(`الحالة العامة: ${statusBadge.label} (مؤشر صحة ${healthScore}/100).`);
     parts.push(`هامش الأمان: ${safetyMarginPct}% مقابل نقطة تعادل تقريبية عند ${breakEvenRevenue}.`);
-    parts.push(`التركيز: ${focusAxis}.`);
-    if (topShare >= 70) parts.push("تنبيه: الإيرادات مركزة بشكل كبير على منتج واحد، ما يرفع حساسية الأداء لأي تقلب.");
-    if (profit < 0) parts.push("الأولوية: إيقاف العجز عبر مزيج من تحسين الإيرادات أو إعادة ضبط التكاليف.");
-    if (trend === "تحسن") parts.push("إشارة إيجابية: الاتجاه عبر الزمن يُظهر تحسنًا عامًا في صافي التدفق.");
-    if (trend === "تراجع") parts.push("إشارة حذر: الاتجاه عبر الزمن يُظهر تراجعًا، ويستحسن فحص أسباب التكاليف أو انخفاض الإيرادات.");
+    parts.push(`محور التركيز: ${focusAxis}.`);
+    if (topShare >= 70) parts.push("تنبيه: الإيرادات مركزة على منتج واحد، ما يرفع حساسية الأداء لأي تقلب.");
+    if (profit < 0) parts.push("الأولوية: تقليل العجز عبر ضبط التكاليف أو تحسين الإيرادات ضمن نفس الإطار الحسابي.");
+    if (trend === "تحسن") parts.push("إشارة إيجابية: الاتجاه الزمني يُظهر تحسنًا في صافي التدفق.");
+    if (trend === "تراجع") parts.push("إشارة حذر: الاتجاه الزمني يُظهر تراجعًا، ويستحسن فحص أسباب التدهور.");
     return parts.join(" ");
   }, [revenue, costs, statusBadge.label, healthScore, safetyMarginPct, breakEvenRevenue, focusAxis, topShare, profit, trend]);
 
@@ -342,15 +372,15 @@ export default function DataPage() {
     if (profit > 0) items.push("تحقيق فائض تشغيلي ضمن الفترة الحالية.");
     if (margin >= 20) items.push("هامش ربح جيد نسبيًا يدعم المرونة.");
     if (trend === "تحسن") items.push("اتجاه زمني إيجابي في صافي التدفق.");
-    if (topShare < 50 && products.length > 1) items.push("توزيع الإيرادات أقل تركّزًا (تنويع أفضل).");
-    if (items.length === 0) items.push("لا توجد نقاط قوة بارزة وفق البيانات الحالية—يمكن تعزيزها بإضافة فترات وتوزيع منتجات أدق.");
+    if (topShare < 50 && products.length > 1) items.push("تنويع مقبول في توزيع الإيرادات.");
+    if (items.length === 0) items.push("لا توجد نقاط قوة بارزة وفق البيانات الحالية—يمكن تعزيز القراءة بإضافة فترات/منتجات أدق.");
     return items;
   }, [profit, margin, trend, topShare, products.length]);
 
   const warnings = useMemo(() => {
     const items: string[] = [];
     if (profit < 0) items.push("عجز تشغيلي: التكاليف تتجاوز الإيرادات.");
-    if (margin < 10 && revenue > 0) items.push("هامش ربح منخفض قد لا يتحمل أي تقلب بسيط.");
+    if (margin < 10 && revenue > 0) items.push("هامش ربح منخفض قد لا يتحمل تقلبات بسيطة.");
     if (costPressureRatio > 0.85 && revenue > 0) items.push("ضغط تكاليف مرتفع مقارنة بالإيرادات.");
     if (topShare >= 70) items.push("اعتماد مرتفع على منتج واحد (مخاطر تركّز).");
     if (trend === "تراجع") items.push("اتجاه صافي التدفق عبر الزمن في حالة تراجع.");
@@ -358,7 +388,7 @@ export default function DataPage() {
     return items;
   }, [profit, margin, revenue, costPressureRatio, topShare, trend]);
 
-  /* ===== PDF Export (حل قص الشعار + تعدد الصفحات) ===== */
+  /* ===== PDF Export ===== */
   const exportPDF = async () => {
     setPdfMode(true);
 
@@ -409,7 +439,7 @@ export default function DataPage() {
 
   if (!mounted) return null;
 
-  /* ===== Shared input classes for Dark/Light ===== */
+  /* ===== Shared styles ===== */
   const inputClass = `w-full rounded-lg border px-4 py-2 mt-1 outline-none ${
     darkMode
       ? "bg-gray-800 border-gray-700 text-white placeholder-gray-400"
@@ -436,7 +466,9 @@ export default function DataPage() {
       <div id="report" className="mx-auto max-w-6xl space-y-14">
         {/* Top Trial Badge */}
         <div className="flex justify-center">
-          <span className={`inline-flex items-center rounded-full px-5 py-2 text-sm font-semibold text-white shadow ${badgeTone}`}>
+          <span
+            className={`inline-flex items-center rounded-full px-5 py-2 text-sm font-semibold text-white shadow ${badgeTone}`}
+          >
             نسخة تجريبية — عرض توضيحي
           </span>
         </div>
@@ -452,9 +484,14 @@ export default function DataPage() {
               priority
               unoptimized
             />
+
             <div>
               <h1 className="text-3xl font-bold">تحليل الأداء المالي (متقدم)</h1>
-              <p className={`mt-1 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+              <p
+                className={`mt-1 text-sm ${
+                  darkMode ? "text-gray-400" : "text-gray-600"
+                }`}
+              >
                 لوحة قرار احترافية — تجمع المؤشرات، المخاطر، الاتجاه، والحساسية بصورة قابلة للعرض والتصدير.
               </p>
             </div>
@@ -497,14 +534,24 @@ export default function DataPage() {
             </div>
 
             <div className="min-w-[220px]">
-              <div className={`rounded-xl p-4 border ${darkMode ? "border-gray-800" : "border-gray-200"}`}>
-                <div className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-600"}`}>الحالة</div>
+              <div
+                className={`rounded-xl p-4 border ${
+                  darkMode ? "border-gray-800" : "border-gray-200"
+                }`}
+              >
+                <div className={`text-xs ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  الحالة
+                </div>
                 <div className="text-lg font-bold mt-1">{statusBadge.label}</div>
 
-                <div className={`mt-3 text-xs ${darkMode ? "text-gray-400" : "text-gray-600"}`}>مؤشر الصحة</div>
+                <div className={`mt-3 text-xs ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  مؤشر الصحة
+                </div>
                 <div className="text-2xl font-bold">{healthScore}/100</div>
 
-                <div className={`mt-3 text-xs ${darkMode ? "text-gray-400" : "text-gray-600"}`}>المخاطر</div>
+                <div className={`mt-3 text-xs ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+                  المخاطر
+                </div>
                 <div className="text-lg font-semibold">{riskLevel}</div>
               </div>
             </div>
@@ -530,7 +577,7 @@ export default function DataPage() {
           </div>
         </section>
 
-        {/* Summary Cards (كما هي) */}
+        {/* Summary Cards */}
         <section className="grid grid-cols-4 gap-4">
           {[
             { label: "الإيرادات", value: revenue },
@@ -546,6 +593,7 @@ export default function DataPage() {
             >
               <div className="text-sm text-gray-400">{item.label}</div>
               <div className="text-2xl font-bold">{item.value}</div>
+
               <div className={`mt-2 text-xs ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
                 {item.label === "الإيرادات" && `تعادل تقريبي عند: ${breakEvenRevenue}`}
                 {item.label === "التكاليف" && `ضغط تكاليف: ${revenue > 0 ? Math.round(costPressureRatio * 100) : 0}%`}
@@ -556,7 +604,7 @@ export default function DataPage() {
           ))}
         </section>
 
-        {/* Inputs (كما هي) */}
+        {/* Inputs */}
         <section className={cardClass}>
           <h2 className="text-xl font-semibold mb-4">البيانات الأساسية</h2>
 
@@ -582,7 +630,8 @@ export default function DataPage() {
             </div>
           </div>
         </section>
-        {/* Cash Flow (مقارن واضح) */}
+
+        {/* Cash Flow */}
         <section className={cardClass}>
           <h2 className="text-xl font-semibold mb-6">مؤشر التدفق المالي</h2>
           <ResponsiveContainer width="100%" height={300}>
@@ -598,7 +647,6 @@ export default function DataPage() {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-
           <p className={`mt-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
             {profit > 0
               ? "إشارة تنفيذية: النشاط يولد صافي تدفق إيجابي ضمن الفترة الحالية، ما يعزز القدرة على التوسع أو بناء احتياطي."
@@ -683,7 +731,7 @@ export default function DataPage() {
           </div>
 
           <p className={`mt-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-            يعرض هذا القسم أثر تغيّر افتراضي بنسبة ±{Math.round(sensitivityRate * 100)}% على صافي التدفق. 
+            يعرض هذا القسم أثر تغيّر افتراضي بنسبة ±{Math.round(sensitivityRate * 100)}% على صافي التدفق.
             {topShare >= 70
               ? " ملاحظة: مع تركّز الإيرادات على منتج واحد، تصبح الحساسية التشغيلية أعلى من المعتاد."
               : " ملاحظة: تنويع الإيرادات يساعد على امتصاص الصدمات."}
@@ -704,7 +752,6 @@ export default function DataPage() {
             </button>
           </div>
 
-          {/* جدول إدخال الفترات */}
           <div className="space-y-3 mb-6">
             {periods.map((p) => (
               <div key={p.id} className="grid grid-cols-3 gap-4">
@@ -745,14 +792,32 @@ export default function DataPage() {
               <Tooltip />
               <Legend />
               <ReferenceLine y={0} stroke="#9ca3af" />
-              <Line type="monotone" dataKey="revenue" stroke="#3b82f6" strokeWidth={3} name="الإيرادات" />
-              <Line type="monotone" dataKey="costs" stroke="#ef4444" strokeWidth={3} name="التكاليف" />
-              <Line type="monotone" dataKey="net" stroke="#10b981" strokeWidth={3} name="صافي التدفق" />
+              <Line
+                type="monotone"
+                dataKey="revenue"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                name="الإيرادات"
+              />
+              <Line
+                type="monotone"
+                dataKey="costs"
+                stroke="#ef4444"
+                strokeWidth={3}
+                name="التكاليف"
+              />
+              <Line
+                type="monotone"
+                dataKey="net"
+                stroke="#10b981"
+                strokeWidth={3}
+                name="صافي التدفق"
+              />
             </LineChart>
           </ResponsiveContainer>
 
           <p className={`mt-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-            تشخيص الاتجاه: <span className="font-semibold">{trend}</span> — 
+            تشخيص الاتجاه: <span className="font-semibold">{trend}</span> —{" "}
             {trend === "تحسن"
               ? " الأداء يتحسن عبر الزمن (إشارة إيجابية للاستمرارية)."
               : trend === "تراجع"
@@ -815,7 +880,8 @@ export default function DataPage() {
           </ResponsiveContainer>
 
           <p className={`mt-3 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-            قراءة محفظة المنتجات: أعلى تركّز حاليًا = <span className="font-semibold">{topShare}%</span>.{" "}
+            قراءة محفظة المنتجات: أعلى تركّز حاليًا ={" "}
+            <span className="font-semibold">{topShare}%</span>.{" "}
             {topShare >= 70
               ? "يوصى بتوسيع قاعدة الإيرادات لتقليل المخاطر."
               : "مستوى التركّز ضمن نطاق مقبول نسبيًا."}
@@ -880,18 +946,20 @@ export default function DataPage() {
           </div>
 
           <p className={`mt-4 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
-            محور التركيز الحالي: <span className="font-semibold">{focusAxis}</span> — 
+            محور التركيز الحالي: <span className="font-semibold">{focusAxis}</span> —{" "}
             يُستحسن استخدام هذا القسم لتحديد 1–3 إجراءات تنفيذية قصيرة المدى.
           </p>
         </section>
 
-        {/* Guidance (مرتبط بالنتيجة + حماية قانونية) */}
+        {/* Guidance */}
         <section className={cardClass}>
           <h2 className="text-lg font-semibold mb-3">قراءة تحليلية إرشادية</h2>
           <p className={darkMode ? "text-gray-300" : "text-gray-700"}>{guidance}</p>
+
           <p className={`mt-3 text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
             هذا العرض ذو طابع معلوماتي وتحليلي فقط، ولا يمثل توصية مباشرة أو غير مباشرة، ولا يُقصد به توجيه قرار مالي أو استثماري.
           </p>
+
           <p className={`mt-2 text-xs ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
             ملاحظة: النتائج تعتمد على القيم المدخلة ونطاقها، وقد تختلف القراءة الفعلية وفق تفاصيل محاسبية وتشغيلية غير ممثلة هنا.
           </p>
