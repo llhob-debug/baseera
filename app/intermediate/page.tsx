@@ -14,13 +14,6 @@ import {
   ReferenceLine,
 } from "recharts";
 
-/* ================= TYPES ================= */
-type Product = {
-  id: number;
-  name: string;
-  share: number; // % من الإيرادات
-};
-
 export default function IntermediateAnalysisPage() {
   /* ===== Theme ===== */
   const [mounted, setMounted] = useState(false);
@@ -42,73 +35,28 @@ export default function IntermediateAnalysisPage() {
   const [revenue, setRevenue] = useState<number>(0);
   const [costs, setCosts] = useState<number>(0);
 
-  /* ===== Products ===== */
-  const [products, setProducts] = useState<Product[]>([
-    { id: 1, name: "منتج 1", share: 100 },
-  ]);
-  const [nextProductId, setNextProductId] = useState(2);
-
-  const addProduct = () => {
-    setProducts((prev) => [
-      ...prev,
-      { id: nextProductId, name: `منتج ${prev.length + 1}`, share: 0 },
-    ]);
-    setNextProductId((x) => x + 1);
-  };
-
-  const updateProduct = (
-    id: number,
-    field: "name" | "share",
-    value: string
-  ) => {
-    setProducts((prev) =>
-      prev.map((p) =>
-        p.id === id
-          ? { ...p, [field]: field === "share" ? Number(value) : value }
-          : p
-      )
-    );
-  };
-
   /* ===== Calculations ===== */
   const profit = revenue - costs;
   const margin =
     revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
 
   /* ===== Charts ===== */
-  const productChart = useMemo(
-    () =>
-      products.map((p) => ({
-        name: p.name,
-        value: Math.round((revenue * p.share) / 100),
-      })),
-    [products, revenue]
-  );
-
   const cashFlowChart = [
     { name: "الإيرادات", value: revenue },
     { name: "التكاليف", value: costs },
     { name: "الصافي", value: profit },
   ];
 
-  const colors = ["#2563eb", "#16a34a", "#dc2626", "#7c3aed"];
+  const revenueDistribution = useMemo(() => {
+    if (revenue <= 0) return [];
+    return [
+      { name: "المصدر الرئيسي", value: Math.round(revenue * 0.55) },
+      { name: "مصادر ثانوية", value: Math.round(revenue * 0.30) },
+      { name: "مصادر أخرى", value: Math.round(revenue * 0.15) },
+    ];
+  }, [revenue]);
 
-  /* ===== Guidance ===== */
-  let guidance =
-    "أدخل البيانات ثم وزّع الإيرادات على المنتجات لاستكشاف صورة أوضح للأداء.";
-
-  if (revenue > 0) {
-    if (profit > 0) {
-      guidance =
-        "تشير القيم المدخلة إلى فائض تشغيلي، مع توضيح مساهمة كل منتج في الإيرادات ضمن قراءة موسعة.";
-    } else if (profit === 0) {
-      guidance =
-        "تشير القيم المدخلة إلى نقطة تعادل بين الإيرادات والتكاليف ضمن قراءة موسعة.";
-    } else {
-      guidance =
-        "تشير القيم المدخلة إلى أن التكاليف تتجاوز الإيرادات وفق قراءة موسعة غير تفصيلية.";
-    }
-  }
+  const colors = ["#2563eb", "#16a34a", "#f59e0b"];
 
   if (!mounted) return null;
 
@@ -142,7 +90,7 @@ export default function IntermediateAnalysisPage() {
             <div>
               <h1 className="text-2xl font-bold">القراءة الموسعة</h1>
               <p className="text-sm text-gray-400 mt-1">
-                استكشاف الأداء عبر توزيع الإيرادات دون تحليل تاريخي أو تنبؤي
+                قراءة بصرية تساعد على فهم الأداء بدون الدخول في تعقيد تحليلي
               </p>
             </div>
           </div>
@@ -168,10 +116,7 @@ export default function IntermediateAnalysisPage() {
 
         {/* Inputs */}
         <section className={cardClass}>
-          <h2 className="text-lg font-semibold mb-4">
-            البيانات الأساسية
-          </h2>
-
+          <h2 className="text-lg font-semibold mb-4">البيانات الأساسية</h2>
           <div className="grid grid-cols-2 gap-6">
             <div>
               <label className="text-sm font-medium">الإيرادات</label>
@@ -179,160 +124,66 @@ export default function IntermediateAnalysisPage() {
                 type="number"
                 min={0}
                 value={revenue}
-                onChange={(e) =>
-                  setRevenue(Math.max(0, Number(e.target.value)))
-                }
+                onChange={(e) => setRevenue(Math.max(0, Number(e.target.value)))}
                 className={inputClass}
               />
             </div>
-
             <div>
               <label className="text-sm font-medium">التكاليف</label>
               <input
                 type="number"
                 min={0}
                 value={costs}
-                onChange={(e) =>
-                  setCosts(Math.max(0, Number(e.target.value)))
-                }
+                onChange={(e) => setCosts(Math.max(0, Number(e.target.value)))}
                 className={inputClass}
               />
             </div>
           </div>
         </section>
 
-        {/* Summary */}
-        <section className="grid grid-cols-3 gap-4">
-          <div className={cardClass}>
-            <div className="text-sm text-gray-400">النتيجة</div>
-            <div
-              className={`text-2xl font-bold ${
-                profit > 0
-                  ? "text-green-400"
-                  : profit < 0
-                  ? "text-red-400"
-                  : ""
-              }`}
-            >
-              {profit.toLocaleString("ar-SA")}
-            </div>
-          </div>
-
-          <div className={cardClass}>
-            <div className="text-sm text-gray-400">
-              الهامش التقريبي %
-            </div>
-            <div className="text-2xl font-bold">
-              {margin}%
-            </div>
-          </div>
-
-          <div className={cardClass}>
-            <div className="text-sm text-gray-400">
-              الحالة
-            </div>
-            <div className="text-lg font-semibold">
-              {profit > 0
-                ? "فائض"
-                : profit === 0
-                ? "تعادل"
-                : "عجز"}
-            </div>
-          </div>
-        </section>
-
         {/* Cash Flow */}
         <section className={cardClass}>
-          <h2 className="text-lg font-semibold mb-4">
-            مؤشر التدفق المالي
-          </h2>
+          <h2 className="text-lg font-semibold mb-1">مؤشر التدفق المالي</h2>
+          <p className="text-sm text-gray-400 mb-4">
+            يوضح العلاقة بين الإيرادات والتكاليف وتأثيرها المباشر على النتيجة.
+          </p>
+
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={cashFlowChart}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
               <ReferenceLine y={0} stroke="#9ca3af" />
-              <Bar dataKey="value">
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
                 {cashFlowChart.map((_, i) => (
-                  <Cell key={i} fill={colors[i % colors.length]} />
+                  <Cell key={i} fill={colors[i]} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </section>
 
-        {/* Products */}
+        {/* Revenue Distribution */}
         <section className={cardClass}>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">
-              توزيع الإيرادات على المنتجات
-            </h2>
-            <button
-              onClick={addProduct}
-              className={`rounded-lg border px-4 py-2 text-sm ${
-                darkMode ? "hover:bg-gray-800" : "hover:bg-gray-100"
-              }`}
-            >
-              + إضافة منتج
-            </button>
-          </div>
-
-          <div className="space-y-3 mb-6">
-            {products.map((p) => (
-              <div key={p.id} className="grid grid-cols-2 gap-4">
-                <input
-                  value={p.name}
-                  onChange={(e) =>
-                    updateProduct(p.id, "name", e.target.value)
-                  }
-                  className={inputClass}
-                />
-                <input
-                  type="number"
-                  value={p.share}
-                  onChange={(e) =>
-                    updateProduct(p.id, "share", e.target.value)
-                  }
-                  className={inputClass}
-                />
-              </div>
-            ))}
-          </div>
+          <h2 className="text-lg font-semibold mb-1">
+            توزيع مصادر الإيرادات
+          </h2>
 
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={productChart}>
+            <BarChart data={revenueDistribution}>
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="value">
-                {productChart.map((_, i) => (
-                  <Cell key={i} fill={colors[i % colors.length]} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {revenueDistribution.map((_, i) => (
+                  <Cell key={i} fill={colors[i]} />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
         </section>
 
-        {/* Guidance */}
-        <section className={cardClass}>
-          <h2 className="text-lg font-semibold mb-2">
-            قراءة إرشادية
-          </h2>
-          <p className={darkMode ? "text-gray-300" : "text-gray-700"}>
-            {guidance}
-          </p>
-          <p
-            className={`mt-3 text-sm ${
-              darkMode ? "text-gray-400" : "text-gray-600"
-            }`}
-          >
-            المحتوى المعروض لأغراض تجريبية وتوضيحية فقط،
-            ولا يمثل توصية مالية أو استثمارية أو تشغيلية،
-            ولا يُقصد به توجيه أي قرار.
-          </p>
-        </section>
-
-        {/* CTA – Trial Exploration */}
+        {/* 🔒 Smart Indicator – Premium Teaser */}
         <section
           className={`rounded-2xl p-6 border ${
             darkMode
@@ -340,24 +191,35 @@ export default function IntermediateAnalysisPage() {
               : "bg-white border-gray-300"
           }`}
         >
-          <h3 className="text-lg font-semibold mb-2">
-            هل ترغب في استكشاف التحليل المتقدم؟
-          </h3>
-          <p
-            className={`text-sm mb-4 ${
-              darkMode ? "text-gray-300" : "text-gray-600"
-            }`}
-          >
-            المستوى التالي يضيف أبعادًا تحليلية أوسع
-            ويُعرض حاليًا ضمن التجربة الاستكشافية للمنصة.
+          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+            🔒 مؤشر جودة الربح
+          </h2>
+          <p className="text-sm text-gray-400 mb-4">
+            يوضح هذا المؤشر ما إذا كان الربح الحالي صحيًا وقابلًا للاستمرار،
+            أو أنه يعتمد على عوامل قد تتغير بسرعة.
           </p>
 
-          <Link
-            href="/data"
-            className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-6 py-3 text-white font-semibold hover:bg-blue-800 transition"
-          >
-            🔍 استكشاف التحليل المتقدم
-          </Link>
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">
+              متاح ضمن التحليل المتقدم
+            </span>
+
+            <Link
+              href="/data"
+              className="rounded-lg bg-blue-700 px-5 py-2 text-sm text-white font-semibold hover:bg-blue-800 transition"
+            >
+              🔍 استكشاف التحليل المتقدم
+            </Link>
+          </div>
+        </section>
+
+        {/* Guidance */}
+        <section className={cardClass}>
+          <h2 className="text-lg font-semibold mb-2">قراءة إرشادية</h2>
+          <p className={darkMode ? "text-gray-300" : "text-gray-700"}>
+            هذه القراءة تهدف إلى إعطاء فهم بصري سريع للأداء العام،
+            وتمهّد لتحليل أعمق في المستوى التالي.
+          </p>
         </section>
       </div>
     </main>

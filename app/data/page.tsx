@@ -388,6 +388,31 @@ export default function DataPage() {
     return items;
   }, [profit, margin, revenue, costPressureRatio, topShare, trend]);
 
+const profitQualityScore = useMemo(() => {
+  let score = 100;
+
+  if (margin < 10) score -= 25;
+  else if (margin < 20) score -= 10;
+
+  if (costPressureRatio > 0.85) score -= 20;
+  else if (costPressureRatio > 0.75) score -= 10;
+
+  if (topShare >= 70) score -= 20;
+  else if (topShare >= 50) score -= 10;
+
+  if (volatility > Math.abs(profit)) score -= 15;
+
+  return Math.max(0, Math.round(score));
+}, [margin, costPressureRatio, topShare, volatility, profit]);
+
+const profitQualityLabel =
+  profitQualityScore >= 75
+    ? "جودة مرتفعة"
+    : profitQualityScore >= 50
+    ? "جودة متوسطة"
+    : "جودة منخفضة";
+
+
   /* ===== PDF Export ===== */
   const exportPDF = async () => {
     setPdfMode(true);
@@ -532,6 +557,34 @@ export default function DataPage() {
                 {narrative}
               </p>
             </div>
+
+<section className={cardClass}>
+  <h2 className="text-xl font-semibold mb-3">
+    مؤشر جودة الربح
+  </h2>
+
+  <div className="flex items-center gap-6">
+    <div className="text-4xl font-bold">
+      {profitQualityScore}/100
+    </div>
+
+    <div>
+      <div className="text-lg font-semibold mb-1">
+        {profitQualityLabel}
+      </div>
+      <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-600"}`}>
+        يقيس هذا المؤشر مدى استدامة الربح الحالي بناءً على
+        الهامش، استقرار الأداء عبر الزمن، ضغط التكاليف،
+        وتركيّز الإيرادات.
+      </p>
+    </div>
+  </div>
+
+  <p className={`mt-4 text-xs ${darkMode ? "text-gray-500" : "text-gray-500"}`}>
+    * مؤشر تحليلي استرشادي، لا يمثل توصية مباشرة أو توقعًا مستقبليًا.
+  </p>
+</section>
+
 
             <div className="min-w-[220px]">
               <div
