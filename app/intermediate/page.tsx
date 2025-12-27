@@ -37,24 +37,43 @@ export default function IntermediateAnalysisPage() {
 
   /* ===== Calculations ===== */
   const profit = revenue - costs;
-  const margin =
-    revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
+  const margin = revenue > 0 ? Math.round((profit / revenue) * 100) : 0;
 
-  /* ===== Charts ===== */
+  /* ===== Cash Flow Chart ===== */
   const cashFlowChart = [
     { name: "الإيرادات", value: revenue },
     { name: "التكاليف", value: costs },
     { name: "الصافي", value: profit },
   ];
 
+  /* ===== Revenue Distribution (تقريبي) ===== */
   const revenueDistribution = useMemo(() => {
     if (revenue <= 0) return [];
     return [
-      { name: "المصدر الرئيسي", value: Math.round(revenue * 0.55) },
-      { name: "مصادر ثانوية", value: Math.round(revenue * 0.30) },
+      { name: "مصدر رئيسي", value: Math.round(revenue * 0.6) },
+      { name: "مصادر ثانوية", value: Math.round(revenue * 0.25) },
       { name: "مصادر أخرى", value: Math.round(revenue * 0.15) },
     ];
   }, [revenue]);
+
+  /* ===== 🔒 Performance Fragility Indicator (Paid) ===== */
+  const fragility = useMemo(() => {
+    if (revenue <= 0) return "غير قابل للتقييم";
+    if (profit <= 0) return "هش";
+    if (margin < 15) return "حساس";
+    return "متماسك";
+  }, [revenue, profit, margin]);
+
+  const fragilityText = {
+    متماسك:
+      "الأداء الحالي يحقق فائضًا مع هامش مقبول نسبيًا، ما يشير إلى قدرة أفضل على امتصاص التقلبات البسيطة.",
+    حساس:
+      "رغم وجود فائض، إلا أن هامش الربح محدود، ما يجعل الأداء حساسًا لأي تغير بسيط في التكاليف.",
+    هش:
+      "الأداء الحالي لا يتحمل الصدمات التشغيلية، وقد يؤدي أي تغير محدود إلى عجز.",
+    "غير قابل للتقييم":
+      "البيانات غير كافية لتقييم هشاشة الأداء.",
+  } as const;
 
   const colors = ["#2563eb", "#16a34a", "#f59e0b"];
 
@@ -90,28 +109,17 @@ export default function IntermediateAnalysisPage() {
             <div>
               <h1 className="text-2xl font-bold">القراءة الموسعة</h1>
               <p className="text-sm text-gray-400 mt-1">
-                قراءة بصرية تساعد على فهم الأداء بدون الدخول في تعقيد تحليلي
+                قراءة تشخيصية مبسطة تتجاوز الأرقام المباشرة
               </p>
             </div>
           </div>
 
-          <div className="flex gap-3">
-            <button
-              onClick={() => setDarkMode(!darkMode)}
-              className={`rounded-lg border px-4 py-2 text-sm ${
-                darkMode ? "hover:bg-gray-700" : "hover:bg-gray-200"
-              }`}
-            >
-              {darkMode ? "🌙 داكن" : "☀️ فاتح"}
-            </button>
-
-            <Link
-              href="/"
-              className="rounded-lg bg-black px-4 py-2 text-sm text-white hover:bg-gray-900"
-            >
-              العودة
-            </Link>
-          </div>
+          <Link
+            href="/"
+            className="rounded-lg bg-black px-4 py-2 text-sm text-white hover:bg-gray-900"
+          >
+            العودة
+          </Link>
         </header>
 
         {/* Inputs */}
@@ -124,7 +132,9 @@ export default function IntermediateAnalysisPage() {
                 type="number"
                 min={0}
                 value={revenue}
-                onChange={(e) => setRevenue(Math.max(0, Number(e.target.value)))}
+                onChange={(e) =>
+                  setRevenue(Math.max(0, Number(e.target.value)))
+                }
                 className={inputClass}
               />
             </div>
@@ -134,7 +144,9 @@ export default function IntermediateAnalysisPage() {
                 type="number"
                 min={0}
                 value={costs}
-                onChange={(e) => setCosts(Math.max(0, Number(e.target.value)))}
+                onChange={(e) =>
+                  setCosts(Math.max(0, Number(e.target.value)))
+                }
                 className={inputClass}
               />
             </div>
@@ -143,11 +155,7 @@ export default function IntermediateAnalysisPage() {
 
         {/* Cash Flow */}
         <section className={cardClass}>
-          <h2 className="text-lg font-semibold mb-1">مؤشر التدفق المالي</h2>
-          <p className="text-sm text-gray-400 mb-4">
-            يوضح العلاقة بين الإيرادات والتكاليف وتأثيرها المباشر على النتيجة.
-          </p>
-
+          <h2 className="text-lg font-semibold mb-4">مؤشر التدفق المالي</h2>
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={cashFlowChart}>
               <XAxis dataKey="name" />
@@ -165,10 +173,9 @@ export default function IntermediateAnalysisPage() {
 
         {/* Revenue Distribution */}
         <section className={cardClass}>
-          <h2 className="text-lg font-semibold mb-1">
+          <h2 className="text-lg font-semibold mb-4">
             توزيع مصادر الإيرادات
           </h2>
-
           <ResponsiveContainer width="100%" height={260}>
             <BarChart data={revenueDistribution}>
               <XAxis dataKey="name" />
@@ -183,42 +190,32 @@ export default function IntermediateAnalysisPage() {
           </ResponsiveContainer>
         </section>
 
-        {/* 🔒 Smart Indicator – Premium Teaser */}
+        {/* 🔒 Performance Fragility */}
         <section
           className={`rounded-2xl p-6 border ${
             darkMode
-              ? "bg-gray-900 border-gray-700"
-              : "bg-white border-gray-300"
+              ? "bg-gray-900 border-yellow-700"
+              : "bg-white border-yellow-500"
           }`}
         >
-          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            🔒 مؤشر جودة الربح
+          <h2 className="text-lg font-semibold mb-2">
+            🔒 مؤشر هشاشة الأداء (نسخة موسعة)
           </h2>
-          <p className="text-sm text-gray-400 mb-4">
-            يوضح هذا المؤشر ما إذا كان الربح الحالي صحيًا وقابلًا للاستمرار،
-            أو أنه يعتمد على عوامل قد تتغير بسرعة.
+
+          <div className="text-2xl font-bold mb-3">
+            {fragility === "متماسك" && "🟢 أداء متماسك"}
+            {fragility === "حساس" && "🟡 أداء حساس"}
+            {fragility === "هش" && "🔴 أداء هش"}
+            {fragility === "غير قابل للتقييم" && "—"}
+          </div>
+
+          <p className="text-sm text-gray-400">
+            {fragilityText[fragility]}
           </p>
 
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">
-              متاح ضمن التحليل المتقدم
-            </span>
-
-            <Link
-              href="/data"
-              className="rounded-lg bg-blue-700 px-5 py-2 text-sm text-white font-semibold hover:bg-blue-800 transition"
-            >
-              🔍 استكشاف التحليل المتقدم
-            </Link>
-          </div>
-        </section>
-
-        {/* Guidance */}
-        <section className={cardClass}>
-          <h2 className="text-lg font-semibold mb-2">قراءة إرشادية</h2>
-          <p className={darkMode ? "text-gray-300" : "text-gray-700"}>
-            هذه القراءة تهدف إلى إعطاء فهم بصري سريع للأداء العام،
-            وتمهّد لتحليل أعمق في المستوى التالي.
+          <p className="mt-3 text-xs text-gray-500">
+            * في التحليل المتقدم يتم تحليل هشاشة الأداء بدقة أعلى وربطها بجودة
+            الربح والاتجاه الزمني والمخاطر التشغيلية.
           </p>
         </section>
       </div>
